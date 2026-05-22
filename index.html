@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MBTI 詞彙人格預測工具</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      background: #f5f5f0;
+      color: #1a1a1a;
+      padding: 2rem 1rem;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+      background: #ffffff;
+      border-radius: 16px;
+      border: 1px solid #e0ddd6;
+      padding: 2rem;
+    }
+
+    h1 {
+      font-size: 20px;
+      font-weight: 500;
+      margin-bottom: 6px;
+      color: #1a1a1a;
+    }
+
+    .subtitle {
+      font-size: 13px;
+      color: #888780;
+      margin-bottom: 24px;
+    }
+
+    .section-label {
+      font-size: 12px;
+      font-weight: 500;
+      margin-bottom: 8px;
+    }
+
+    .section-label.pos { color: #185FA5; }
+    .section-label.neg { color: #A32D2D; }
+
+    .words-group { margin-bottom: 18px; }
+
+    .word-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 13px;
+      cursor: pointer;
+      border: 1px solid #d3d1c7;
+      background: #f1efe8;
+      color: #1a1a1a;
+      margin: 4px;
+      transition: all 0.15s;
+      user-select: none;
+    }
+
+    .word-tag:hover { background: #e8e6de; }
+
+    .word-tag.selected-pos {
+      background: #E6F1FB;
+      border-color: #185FA5;
+      color: #0C447C;
+    }
+
+    .word-tag.selected-neg {
+      background: #FCEBEB;
+      border-color: #A32D2D;
+      color: #791F1F;
+    }
+
+    .divider {
+      border: none;
+      border-top: 1px solid #e0ddd6;
+      margin: 24px 0;
+    }
+
+    .result-area { display: none; }
+
+    .dim-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .dim-item {}
+
+    .dim-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: #888780;
+      margin-bottom: 4px;
+    }
+
+    .dim-bar {
+      height: 8px;
+      border-radius: 4px;
+      background: #d3d1c7;
+      overflow: hidden;
+      margin-bottom: 6px;
+    }
+
+    .dim-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.4s ease;
+    }
+
+    .dim-label-text {
+      font-size: 13px;
+      font-weight: 500;
+      color: #1a1a1a;
+    }
+
+    .result-card {
+      background: #f1efe8;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .result-card-label {
+      font-size: 12px;
+      color: #888780;
+      margin-bottom: 4px;
+    }
+
+    .mbti-type {
+      font-size: 32px;
+      font-weight: 500;
+      color: #1a1a1a;
+      margin-bottom: 4px;
+    }
+
+    .mbti-desc {
+      font-size: 13px;
+      color: #5f5e5a;
+    }
+
+    .jobs-label {
+      font-size: 12px;
+      color: #888780;
+      margin-bottom: 8px;
+    }
+
+    .job-chip {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      margin: 3px;
+      background: #f1efe8;
+      border: 1px solid #d3d1c7;
+      color: #5f5e5a;
+    }
+
+    .trait-box {
+      background: #f1efe8;
+      border-radius: 8px;
+      padding: 12px;
+      margin-top: 12px;
+    }
+
+    .trait-box-label {
+      font-size: 12px;
+      color: #888780;
+      margin-bottom: 4px;
+    }
+
+    .trait-box-text {
+      font-size: 13px;
+      color: #1a1a1a;
+      line-height: 1.6;
+    }
+
+    .disclaimer {
+      font-size: 11px;
+      color: #b4b2a9;
+      margin-top: 12px;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 8px;
+      margin-top: 20px;
+    }
+
+    button {
+      padding: 8px 16px;
+      font-size: 13px;
+      border: 1px solid #d3d1c7;
+      border-radius: 8px;
+      background: transparent;
+      color: #1a1a1a;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    button:hover { background: #f1efe8; }
+    button:active { transform: scale(0.98); }
+
+    @media (max-width: 500px) {
+      .dim-grid { grid-template-columns: 1fr; }
+      .container { padding: 1.25rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <h1>MBTI 詞彙人格預測工具</h1>
+  <p class="subtitle">根據研究資料：選擇你在社群媒體貼文中常用的詞彙，系統將推測可能的 MBTI 人格傾向與適合職位。</p>
+
+  <div class="words-group">
+    <p class="section-label pos">Top 10 正向詞</p>
+    <div id="pos-words">
+      <span class="word-tag" data-word="like"   data-type="pos" data-scores='{"EI":1,"NS":0,"TF":1,"JP":0}'  onclick="toggleWord(this)">like</span>
+      <span class="word-tag" data-word="well"   data-type="pos" data-scores='{"EI":1,"NS":0,"TF":0,"JP":1}'  onclick="toggleWord(this)">well</span>
+      <span class="word-tag" data-word="love"   data-type="pos" data-scores='{"EI":1,"NS":1,"TF":2,"JP":0}'  onclick="toggleWord(this)">love</span>
+      <span class="word-tag" data-word="good"   data-type="pos" data-scores='{"EI":0,"NS":0,"TF":1,"JP":1}'  onclick="toggleWord(this)">good</span>
+      <span class="word-tag" data-word="right"  data-type="pos" data-scores='{"EI":0,"NS":1,"TF":1,"JP":1}'  onclick="toggleWord(this)">right</span>
+      <span class="word-tag" data-word="pretty" data-type="pos" data-scores='{"EI":1,"NS":0,"TF":1,"JP":-1}' onclick="toggleWord(this)">pretty</span>
+      <span class="word-tag" data-word="work"   data-type="pos" data-scores='{"EI":-1,"NS":0,"TF":-1,"JP":1}' onclick="toggleWord(this)">work</span>
+      <span class="word-tag" data-word="best"   data-type="pos" data-scores='{"EI":0,"NS":1,"TF":0,"JP":1}'  onclick="toggleWord(this)">best</span>
+      <span class="word-tag" data-word="better" data-type="pos" data-scores='{"EI":0,"NS":1,"TF":0,"JP":1}'  onclick="toggleWord(this)">better</span>
+      <span class="word-tag" data-word="great"  data-type="pos" data-scores='{"EI":1,"NS":1,"TF":1,"JP":0}'  onclick="toggleWord(this)">great</span>
+    </div>
+  </div>
+
+  <div class="words-group">
+    <p class="section-label neg">Top 10 負向詞</p>
+    <div id="neg-words">
+      <span class="word-tag" data-word="hard"    data-type="neg" data-scores='{"EI":0,"NS":1,"TF":1,"JP":-1}'  onclick="toggleWord(this)">hard</span>
+      <span class="word-tag" data-word="bad"     data-type="neg" data-scores='{"EI":-1,"NS":0,"TF":-1,"JP":0}' onclick="toggleWord(this)">bad</span>
+      <span class="word-tag" data-word="hate"    data-type="neg" data-scores='{"EI":-1,"NS":0,"TF":-2,"JP":0}' onclick="toggleWord(this)">hate</span>
+      <span class="word-tag" data-word="problem" data-type="neg" data-scores='{"EI":0,"NS":1,"TF":-2,"JP":-1}' onclick="toggleWord(this)">problem</span>
+      <span class="word-tag" data-word="sorry"   data-type="neg" data-scores='{"EI":1,"NS":0,"TF":2,"JP":1}'   onclick="toggleWord(this)">sorry</span>
+      <span class="word-tag" data-word="wrong"   data-type="neg" data-scores='{"EI":0,"NS":1,"TF":-2,"JP":-1}' onclick="toggleWord(this)">wrong</span>
+      <span class="word-tag" data-word="crazy"   data-type="neg" data-scores='{"EI":2,"NS":0,"TF":1,"JP":-1}'  onclick="toggleWord(this)">crazy</span>
+      <span class="word-tag" data-word="funny"   data-type="neg" data-scores='{"EI":1,"NS":0,"TF":1,"JP":-1}'  onclick="toggleWord(this)">funny</span>
+      <span class="word-tag" data-word="weird"   data-type="neg" data-scores='{"EI":0,"NS":2,"TF":0,"JP":-2}'  onclick="toggleWord(this)">weird</span>
+      <span class="word-tag" data-word="sad"     data-type="neg" data-scores='{"EI":-1,"NS":0,"TF":2,"JP":0}'  onclick="toggleWord(this)">sad</span>
+    </div>
+  </div>
+
+  <div id="result-area" class="result-area">
+    <hr class="divider">
+
+    <div class="dim-grid">
+      <div class="dim-item">
+        <div class="dim-labels"><span>E 外向</span><span>I 內向</span></div>
+        <div class="dim-bar"><div id="bar-EI" class="dim-fill" style="background:#378ADD; width:50%;"></div></div>
+        <p class="dim-label-text" id="label-EI">—</p>
+      </div>
+      <div class="dim-item">
+        <div class="dim-labels"><span>N 直覺</span><span>S 實感</span></div>
+        <div class="dim-bar"><div id="bar-NS" class="dim-fill" style="background:#1D9E75; width:50%;"></div></div>
+        <p class="dim-label-text" id="label-NS">—</p>
+      </div>
+      <div class="dim-item">
+        <div class="dim-labels"><span>F 情感</span><span>T 思考</span></div>
+        <div class="dim-bar"><div id="bar-TF" class="dim-fill" style="background:#D4537E; width:50%;"></div></div>
+        <p class="dim-label-text" id="label-TF">—</p>
+      </div>
+      <div class="dim-item">
+        <div class="dim-labels"><span>J 判斷</span><span>P 感知</span></div>
+        <div class="dim-bar"><div id="bar-JP" class="dim-fill" style="background:#BA7517; width:50%;"></div></div>
+        <p class="dim-label-text" id="label-JP">—</p>
+      </div>
+    </div>
+
+    <div class="result-card">
+      <p class="result-card-label">推測人格類型</p>
+      <p class="mbti-type" id="mbti-result">—</p>
+      <p class="mbti-desc" id="mbti-desc">—</p>
+    </div>
+
+    <p class="jobs-label">適合職位</p>
+    <div id="job-chips"></div>
+
+    <div class="trait-box">
+      <p class="trait-box-label">語言特徵說明</p>
+      <p class="trait-box-text" id="trait-desc">—</p>
+    </div>
+
+    <p class="disclaimer">此工具基於本研究的邏輯回歸分析結果，僅供學術參考，不代表正式心理測驗結果。建議搭配標準化 MBTI 測驗使用。</p>
+  </div>
+
+  <div class="btn-group">
+    <button onclick="clearAll()">清除全部</button>
+  </div>
+
+</div>
+
+<script>
+  const mbtiData = {
+    ENFJ: { desc:"主導型溝通者，善於激勵他人、建立深厚關係", jobs:["公關","人資主管","教育訓練","諮商師","社工"] },
+    ENFP: { desc:"熱情的創意推動者，富有感染力與開創精神", jobs:["行銷企劃","公關","顧問","創業","藝術創作"] },
+    ENTJ: { desc:"策略性領導者，目標導向強烈、決策果斷", jobs:["主管職","專案管理","策略顧問","創業","法務"] },
+    ENTP: { desc:"創新思考者，善於辯論、解決複雜問題", jobs:["研發","行銷策略","顧問","創業","資料分析"] },
+    ESFJ: { desc:"熱心助人的協調者，重視和諧與他人需求", jobs:["客服","業務","人資","護理","教育訓練"] },
+    ESFP: { desc:"活力充沛的表演者，享受當下、善於社交", jobs:["業務","客服","行銷企劃","藝術創作","公關"] },
+    ESTJ: { desc:"務實的執行者，重視規則、效率與組織秩序", jobs:["行政管理","品管","財務","主管職","法務"] },
+    ESTP: { desc:"靈活的行動者，擅長危機處理與即時應變", jobs:["業務","業務執行","操作技術","創業","主管職"] },
+    INFJ: { desc:"理想主義的洞察者，有深刻直覺與使命感", jobs:["諮商師","社工","研究分析","文字工作","人資"] },
+    INFP: { desc:"理想主義者，富有同理心、創造力與深度", jobs:["文字工作","藝術創作","社工","諮商師","創意設計"] },
+    INTJ: { desc:"獨立的戰略家，長於系統思考與長期規劃", jobs:["研發","資料科學","工程師","專案管理","策略顧問"] },
+    INTP: { desc:"邏輯型思考者，熱愛分析、理論與知識探索", jobs:["後端開發","研究分析","資料科學","工程師","研發"] },
+    ISFJ: { desc:"盡責的守護者，細心可靠、重視他人感受", jobs:["護理","行政管理","品保","會計","社工"] },
+    ISFP: { desc:"溫和的藝術家，重視個人價值與感官體驗", jobs:["創意設計","藝術創作","護理","社工","自由工作者"] },
+    ISTJ: { desc:"負責的檢查者，重視傳統、規範與事實", jobs:["財務","稽核","品管","法務","行政管理"] },
+    ISTP: { desc:"靈巧的技術者，擅長分析機械與實際操作", jobs:["工程師","操作技術","後端開發","資料分析","品保"] }
+  };
+
+  let scores = { EI:0, NS:0, TF:0, JP:0 };
+  let selected = new Set();
+
+  function toggleWord(el) {
+    const word = el.dataset.word;
+    const type = el.dataset.type;
+    const sc   = JSON.parse(el.dataset.scores);
+
+    if (selected.has(word)) {
+      selected.delete(word);
+      el.className = 'word-tag';
+      Object.keys(sc).forEach(k => scores[k] -= sc[k]);
+    } else {
+      selected.add(word);
+      el.className = 'word-tag ' + (type === 'pos' ? 'selected-pos' : 'selected-neg');
+      Object.keys(sc).forEach(k => scores[k] += sc[k]);
+    }
+    updateResult();
+  }
+
+  function updateResult() {
+    if (selected.size === 0) {
+      document.getElementById('result-area').style.display = 'none';
+      return;
+    }
+    document.getElementById('result-area').style.display = 'block';
+
+    const dims = [
+      { key:'EI', posLabel:'E 外向', negLabel:'I 內向', barId:'bar-EI', labelId:'label-EI', posLetter:'E', negLetter:'I' },
+      { key:'NS', posLabel:'N 直覺', negLabel:'S 實感', barId:'bar-NS', labelId:'label-NS', posLetter:'N', negLetter:'S' },
+      { key:'TF', posLabel:'F 情感', negLabel:'T 思考', barId:'bar-TF', labelId:'label-TF', posLetter:'F', negLetter:'T' },
+      { key:'JP', posLabel:'J 判斷', negLabel:'P 感知', barId:'bar-JP', labelId:'label-JP', posLetter:'J', negLetter:'P' }
+    ];
+
+    let mbti = '';
+    let descs = [];
+
+    dims.forEach(d => {
+      const raw = scores[d.key];
+      const pct = Math.min(100, Math.max(0, 50 + raw * 12));
+      document.getElementById(d.barId).style.width = pct + '%';
+
+      let label, letter;
+      if (raw === 0) {
+        label  = '傾向不明確';
+        letter = d.posLetter;
+      } else if (raw > 0) {
+        label  = d.posLabel + '（傾向較強）';
+        letter = d.posLetter;
+        descs.push(d.posLabel);
+      } else {
+        label  = d.negLabel + '（傾向較強）';
+        letter = d.negLetter;
+        descs.push(d.negLabel);
+      }
+      document.getElementById(d.labelId).textContent = label;
+      mbti += letter;
+    });
+
+    document.getElementById('mbti-result').textContent = mbti;
+    const info = mbtiData[mbti] || { desc:'複合型人格傾向', jobs:['多元職位'] };
+    document.getElementById('mbti-desc').textContent = info.desc;
+
+    const chips = document.getElementById('job-chips');
+    chips.innerHTML = info.jobs.map(j => '<span class="job-chip">' + j + '</span>').join('');
+
+    const wordList = Array.from(selected).join('、');
+    const traitText = descs.length > 0
+      ? '選用詞彙（' + wordList + '）顯示出 ' + descs.join('、') + ' 的語言特徵，根據本研究的邏輯回歸分析結果推測為 ' + mbti + ' 型。'
+      : '選用詞彙（' + wordList + '）的四個維度訊號均衡，' + mbti + ' 型為綜合推測結果。';
+    document.getElementById('trait-desc').textContent = traitText;
+  }
+
+  function clearAll() {
+    selected.clear();
+    scores = { EI:0, NS:0, TF:0, JP:0 };
+    document.querySelectorAll('.word-tag').forEach(el => el.className = 'word-tag');
+    document.getElementById('result-area').style.display = 'none';
+  }
+</script>
+
+</body>
+</html>
